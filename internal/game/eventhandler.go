@@ -95,22 +95,23 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 	id := updatedSnake.Id
 
 	snake, exists := gs.Snakes[id]
-	if !exists {
+	if !exists || gs.ClientId == id {
 		return
 	}
 
-	// Update direction
+	// Update direction and other states
 	snake.ChangeDir(updatedSnake.Dir)
-
-	// Sync additional states with server
 	snake.Dead = updatedSnake.Dead
 	snake.Len = updatedSnake.Len
-	snake.Body = append(snake.Body, updatedSnake.Body...)
+
+	// Set a target to handle desync
+	snake.Target = updatedSnake.Head()
 
 	if gs.IsServer() {
 		// Rebroadcast update
 		data, _ := snake.Export()
 		gs.SendEvent("update_snake", data)
+		return
 	}
 }
 

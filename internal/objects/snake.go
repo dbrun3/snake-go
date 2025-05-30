@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const MARSHAL_BODY_SIZE = 5
+const MARSHAL_BODY_SIZE = 1
 
 const (
 	UP int = iota
@@ -22,6 +22,8 @@ type Snake struct {
 	Id    string  `json:"Id"`
 	Body  []Coord `json:"Body"`
 	Dead  bool    `json:"Dead"`
+
+	Target Coord
 }
 
 func CreateSnake(id string) *Snake {
@@ -37,9 +39,41 @@ func (s *Snake) Eat() {
 }
 
 func (s *Snake) Move() {
-	var newHead Coord
-	head := s.Head()
+	// Priority: Handle target correction if active
+	if s.Target != Zero() {
+		head := s.Head()
 
+		// Calculate direction toward target
+		dx := s.Target.X - head.X
+		dy := s.Target.Y - head.Y
+
+		// Normalize to ±1 (for grid movement)
+		if dx != 0 {
+			dx /= abs(dx)
+		}
+		if dy != 0 {
+			dy /= abs(dy)
+		}
+
+		// Move head toward target
+		newHead := head.Translate(dx, dy)
+		s.Body = append(s.Body, newHead)
+
+		// Trim tail if needed
+		if len(s.Body) > s.Len {
+			s.Body = s.Body[len(s.Body)-s.Len:]
+		}
+
+		// Check if target reached
+		if newHead == s.Target {
+			s.Target = Zero()
+		}
+		return
+	}
+
+	// Default movement (no correction)
+	head := s.Head()
+	var newHead Coord
 	switch s.Dir {
 	case UP:
 		newHead = head.Translate(0, -1)
@@ -50,13 +84,20 @@ func (s *Snake) Move() {
 	case RIGHT:
 		newHead = head.Translate(1, 0)
 	}
-
-	// append new head
 	s.Body = append(s.Body, newHead)
 
+	// Trim tail
 	if len(s.Body) > s.Len {
 		s.Body = s.Body[len(s.Body)-s.Len:]
 	}
+}
+
+// Helper for absolute value
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func (s *Snake) ChangeDir(Dir int) bool {

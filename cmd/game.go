@@ -64,6 +64,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 					// on start/death keypress to submit a new snake
 					newSnake := &objects.Snake{Id: game.ClientId, Name: name, Color: color}
 
+					// snake must first be registered on the server if not host
 					if game.IsServer() {
 						game.AddSnake(newSnake)
 					} else {
@@ -97,12 +98,8 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 							mySnake.ChangeDir(objects.DOWN)
 						}
 
-						if game.IsServer() {
-							game.UpdateSnake(mySnake)
-						} else {
-							data, _ := mySnake.Export()
-							game.SendEvent("update_snake", data)
-						}
+						data, _ := mySnake.Export()
+						game.SendEvent("update_snake", data)
 					}
 					lastSendTime = now
 				}
