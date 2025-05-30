@@ -11,7 +11,7 @@ import (
 const FRUIT_PER_TICK = 20
 const MAX_FRUIT = 200
 const MAP_SIZE = 300
-const TICK_DURATION = 40
+const TICK_DURATION = 50
 
 func (gs *GameState) GameLoop() {
 

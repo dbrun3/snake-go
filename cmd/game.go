@@ -28,6 +28,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 
 	// Event channel
 	eventCh := make(chan termbox.Event, 4)
+	lastSendTime := time.Now() // the input throttle timer
 	go func() {
 		for {
 			eventCh <- termbox.PollEvent()
@@ -35,7 +36,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 	}()
 
 	// Event and render loop
-	tick := time.NewTicker(16 * time.Millisecond) // ~60 FPS
+	tick := time.NewTicker(8 * time.Millisecond)
 	defer tick.Stop()
 	for {
 
@@ -78,27 +79,32 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 
 				} else {
 
-					switch ev.Key {
+					// Throttle game inputs to prevent congestion (websockets will block to process everything in correct order)
+					now := time.Now()
+					if now.Sub(lastSendTime) > 100*time.Millisecond {
+						switch ev.Key {
 
-					case termbox.KeyArrowRight:
-						mySnake.ChangeDir(objects.RIGHT)
+						case termbox.KeyArrowRight:
+							mySnake.ChangeDir(objects.RIGHT)
 
-					case termbox.KeyArrowLeft:
-						mySnake.ChangeDir(objects.LEFT)
+						case termbox.KeyArrowLeft:
+							mySnake.ChangeDir(objects.LEFT)
 
-					case termbox.KeyArrowUp:
-						mySnake.ChangeDir(objects.UP)
+						case termbox.KeyArrowUp:
+							mySnake.ChangeDir(objects.UP)
 
-					case termbox.KeyArrowDown:
-						mySnake.ChangeDir(objects.DOWN)
+						case termbox.KeyArrowDown:
+							mySnake.ChangeDir(objects.DOWN)
+						}
+
+						if game.IsServer() {
+							game.UpdateSnake(mySnake)
+						} else {
+							data, _ := mySnake.Export()
+							game.SendEvent("update_snake", data)
+						}
 					}
-
-					if game.IsServer() {
-						game.UpdateSnake(mySnake)
-					} else {
-						data, _ := mySnake.Export()
-						game.SendEvent("update_snake", data)
-					}
+					lastSendTime = now
 				}
 
 			// resize event, update camera
