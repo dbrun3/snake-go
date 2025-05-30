@@ -42,29 +42,28 @@ func (s *Snake) Move() {
 	// Priority: Handle target correction if active
 	if s.Target != Zero() {
 		head := s.Head()
-
-		// Calculate direction toward target
 		dx := s.Target.X - head.X
 		dy := s.Target.Y - head.Y
 
-		// Normalize to ±1 (for grid movement)
-		if dx != 0 {
-			dx /= abs(dx)
+		// Calculate half-distance (rounded up, min 1)
+		moveX := max(abs(dx)/2, 1) * sign(dx)
+		moveY := max(abs(dy)/2, 1) * sign(dy)
+
+		// Clamp to remaining distance (avoid overshooting)
+		if abs(moveX) > abs(dx) {
+			moveX = dx
 		}
-		if dy != 0 {
-			dy /= abs(dy)
+		if abs(moveY) > abs(dy) {
+			moveY = dy
 		}
 
-		// Move head toward target
-		newHead := head.Translate(dx, dy)
+		newHead := head.Translate(moveX, moveY)
 		s.Body = append(s.Body, newHead)
 
-		// Trim tail if needed
 		if len(s.Body) > s.Len {
 			s.Body = s.Body[len(s.Body)-s.Len:]
 		}
 
-		// Check if target reached
 		if newHead == s.Target {
 			s.Target = Zero()
 		}
@@ -98,6 +97,20 @@ func abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func sign(x int) int {
+	if x < 0 {
+		return -1
+	}
+	return 1
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func (s *Snake) ChangeDir(Dir int) bool {
