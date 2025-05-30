@@ -36,7 +36,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 	}()
 
 	// Event and render loop
-	tick := time.NewTicker(8 * time.Millisecond)
+	tick := time.NewTicker(32 * time.Millisecond)
 	defer tick.Stop()
 	for {
 
@@ -115,7 +115,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 		// render loop
 		case <-tick.C:
 			// camera pointed at snake head
-			camera.SetPos(mySnake.Head())
+			camera.FollowPos(mySnake.Head())
 
 			// main render loop
 			render.Clear()

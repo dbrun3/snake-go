@@ -85,7 +85,6 @@ func (gs *GameState) AddSnake(snake *objects.Snake) {
 		// Rebroadcast new snake
 		data, _ := newSnake.Export()
 		gs.SendEvent("add_snake", data)
-		return
 	}
 }
 
@@ -103,37 +102,16 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 	// Update direction
 	snake.ChangeDir(updatedSnake.Dir)
 
+	// Sync additional states with server
+	snake.Dead = updatedSnake.Dead
+	snake.Len = updatedSnake.Len
+	snake.Body = append(snake.Body, updatedSnake.Body...)
+
 	if gs.IsServer() {
 		// Rebroadcast update
 		data, _ := snake.Export()
 		gs.SendEvent("update_snake", data)
-		return
 	}
-
-	// Sync additional states with server
-	snake.Dead = updatedSnake.Dead
-	snake.Len = updatedSnake.Len
-
-	updatedLen := len(updatedSnake.Body)
-	snakeLen := len(snake.Body)
-
-	// If the updated body is longer than the current body, just replace entirely
-	if updatedLen >= snakeLen {
-		snake.Body = updatedSnake.Body
-		return
-	}
-
-	h := snake.Head()
-	for i := len(updatedSnake.Body) - 1; i >= 0; i-- {
-		if h.Equals(updatedSnake.Body[i]) {
-			snake.Body = append(snake.Body, updatedSnake.Body[i+1:]...)
-			return
-		}
-	}
-
-	// fallback
-	snake.Body = append(snake.Body[:snakeLen-updatedLen], updatedSnake.Body...)
-
 }
 
 func (gs *GameState) RemoveSnake(snake *objects.Snake) {

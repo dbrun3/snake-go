@@ -11,6 +11,33 @@ func CreateCamera() *Camera {
 	return &Camera{}
 }
 
+func (c *Camera) FollowPos(pos objects.Coord) {
+	targetPos := objects.NewCord(
+		pos.X-(c.cameraDim.X/2),
+		pos.Y-(c.cameraDim.Y/2),
+	)
+
+	// Calculate direction (normalized to ±1)
+	dx := targetPos.X - c.offsetPos.X
+	dy := targetPos.Y - c.offsetPos.Y
+
+	// Move at least 1px toward the target (even if diff is small)
+	if dx != 0 {
+		c.offsetPos.X += dx / abs(dx) // dx/|dx| = ±1
+	}
+	if dy != 0 {
+		c.offsetPos.Y += dy / abs(dy) // dy/|dy| = ±1
+	}
+}
+
+// Helper for absolute value
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
 func (c *Camera) SetPos(pos objects.Coord) {
 	c.offsetPos = objects.NewCord(pos.X-(c.cameraDim.X/2), pos.Y-(c.cameraDim.Y/2))
 }
