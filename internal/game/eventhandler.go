@@ -59,8 +59,8 @@ func (gs *GameState) AddSnake(snake *objects.Snake) {
 	var x, y int
 	if gs.IsServer() {
 
-		x = gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
-		y = gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
+		x = 0 //gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
+		y = 0 //gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
 	} else {
 		x = snake.Head().X
 		y = snake.Head().Y
@@ -105,14 +105,23 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 
 	if gs.IsServer() {
 		// Rebroadcast update
-		data, _ := gs.Snakes[id].Export()
+		data, _ := snake.Export()
 		gs.SendEvent("update_snake", data)
 		return
 	}
 
-	// Sync state with server
+	// Sync additional states with server
 	snake.Dead = updatedSnake.Dead
 	snake.Len = updatedSnake.Len
+
+	updatedLen := len(updatedSnake.Body)
+	snakeLen := len(snake.Body)
+
+	// If the updated body is longer than the current body, just replace entirely
+	if updatedLen >= snakeLen {
+		snake.Body = updatedSnake.Body
+		return
+	}
 
 	h := snake.Head()
 	for i := len(updatedSnake.Body) - 1; i >= 0; i-- {
@@ -121,6 +130,10 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 			return
 		}
 	}
+
+	// fallback
+	snake.Body = append(snake.Body[:snakeLen-updatedLen], updatedSnake.Body...)
+
 }
 
 func (gs *GameState) RemoveSnake(snake *objects.Snake) {

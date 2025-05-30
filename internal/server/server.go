@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"snake/internal/events"
 	"snake/internal/game"
 	"snake/internal/objects"
@@ -44,7 +43,6 @@ func (s *Server) run() {
 	for {
 		select {
 		case client := <-s.register:
-			fmt.Println("Client connected")
 			s.clients[client] = true
 
 			data, _ := s.game.Export(client.id)
@@ -53,7 +51,6 @@ func (s *Server) run() {
 			client.send <- e
 
 		case client := <-s.unregister:
-			fmt.Println("Client disconnected: ")
 			if _, ok := s.clients[client]; ok {
 				delete(s.clients, client)
 				close(client.send)
