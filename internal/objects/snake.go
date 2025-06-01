@@ -5,8 +5,6 @@ import (
 	"math"
 )
 
-const MARSHAL_BODY_SIZE = 1
-
 const (
 	UP int = iota
 	DOWN
@@ -15,13 +13,14 @@ const (
 )
 
 type Snake struct {
-	Dir   int     `json:"Dir"`
-	Len   int     `json:"Len"`
-	Color Color   `json:"Color"`
-	Name  string  `json:"Name"`
-	Id    string  `json:"Id"`
-	Body  []Coord `json:"Body"`
-	Dead  bool    `json:"Dead"`
+	Dir   int     `json:"dir"`
+	Len   int     `json:"len"`
+	Color Color   `json:"color"`
+	Name  string  `json:"name"`
+	Id    string  `json:"id"`
+	Body  []Coord `json:"body"`
+	Dead  bool    `json:"dead"`
+	Speed bool    `json:"speed"`
 
 	Target Coord
 }
@@ -70,22 +69,28 @@ func (s *Snake) Move() {
 		return
 	}
 
-	// Default movement (no correction)
-	head := s.Head()
-	var newHead Coord
-	switch s.Dir {
-	case UP:
-		newHead = head.Translate(0, -1)
-	case DOWN:
-		newHead = head.Translate(0, 1)
-	case LEFT:
-		newHead = head.Translate(-1, 0)
-	case RIGHT:
-		newHead = head.Translate(1, 0)
+	// default movement with speed modifier
+	speed := 1
+	if s.Speed {
+		speed = 2
 	}
-	s.Body = append(s.Body, newHead)
 
-	// Trim tail
+	for range speed {
+		head := s.Head()
+		var newHead Coord
+		switch s.Dir {
+		case UP:
+			newHead = head.Translate(0, -1)
+		case DOWN:
+			newHead = head.Translate(0, 1)
+		case LEFT:
+			newHead = head.Translate(-1, 0)
+		case RIGHT:
+			newHead = head.Translate(1, 0)
+		}
+		s.Body = append(s.Body, newHead)
+	}
+
 	if len(s.Body) > s.Len {
 		s.Body = s.Body[len(s.Body)-s.Len:]
 	}
@@ -122,6 +127,13 @@ func (s *Snake) ChangeDir(Dir int) bool {
 	return false
 }
 
+func (s *Snake) ChangeSpeed() {
+	s.Speed = !s.Speed
+	if s.Speed && s.Len <= 2 {
+		s.Speed = false
+	}
+}
+
 func ImportSnake(data []byte) (*Snake, error) {
 	var snake Snake
 	err := json.Unmarshal(data, &snake)
@@ -135,7 +147,7 @@ func (s *Snake) Export() ([]byte, error) {
 
 	exportSnake := *s
 	size := len(exportSnake.Body)
-	last := int(math.Min(MARSHAL_BODY_SIZE, float64(size)))
+	last := int(math.Min(1, float64(size)))
 	exportSnake.Body = exportSnake.Body[size-last:]
 
 	return json.Marshal(exportSnake)

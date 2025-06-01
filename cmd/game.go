@@ -79,7 +79,6 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 					}
 
 				} else {
-
 					// Throttle game inputs to prevent congestion (websockets will block to process everything in correct order)
 					now := time.Now()
 					if now.Sub(lastSendTime) > 100*time.Millisecond {
@@ -96,8 +95,10 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 
 						case termbox.KeyArrowDown:
 							mySnake.ChangeDir(objects.DOWN)
-						}
 
+						case termbox.KeySpace:
+							mySnake.ChangeSpeed()
+						}
 						data, _ := mySnake.Export()
 						game.SendEvent("update_snake", data)
 					}
@@ -116,8 +117,7 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 
 			// main render loop
 			render.Clear()
-			render.DrawFruits(game, camera)
-			render.DrawSnakes(game, camera)
+			render.RenderGameState(game, camera)
 			render.Flush()
 		}
 	}

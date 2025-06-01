@@ -31,7 +31,7 @@ func (gs *GameState) GameLoop() {
 	// handle interrupts
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
-
+	var frame uint64 = 0
 	for {
 
 		select {
@@ -50,6 +50,11 @@ func (gs *GameState) GameLoop() {
 				// Dont update dead snakes
 				if snake.Dead {
 					continue
+				}
+
+				// Decrease speed boosted snake length after frame delay
+				if snake.Speed && frame%3 == 0 {
+					snake.Len--
 				}
 
 				// Move
@@ -86,6 +91,7 @@ func (gs *GameState) GameLoop() {
 					}
 				}
 			}
+			frame++
 			gs.Mu.Unlock()
 		}
 

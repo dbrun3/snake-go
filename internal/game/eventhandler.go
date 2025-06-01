@@ -103,6 +103,7 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 	snake.ChangeDir(updatedSnake.Dir)
 	snake.Dead = updatedSnake.Dead
 	snake.Len = updatedSnake.Len
+	snake.Speed = updatedSnake.Speed
 
 	// Set a target to handle desync
 	snake.Target = updatedSnake.Head()

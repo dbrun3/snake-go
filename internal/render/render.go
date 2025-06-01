@@ -36,10 +36,17 @@ func Flush() {
 	termbox.Flush()
 }
 
-// Render all snakes to the screen
-func DrawSnakes(game *game.GameState, camera *Camera) {
+func RenderGameState(game *game.GameState, camera *Camera) {
 	game.Mu.Lock()
 	defer game.Mu.Unlock()
+
+	drawFruits(game, camera)
+	drawSnakes(game, camera)
+
+}
+
+// Render all snakes to the screen
+func drawSnakes(game *game.GameState, camera *Camera) {
 	for _, snake := range game.Snakes {
 		if !snake.Dead {
 			drawSnake(snake, camera)
@@ -47,9 +54,7 @@ func DrawSnakes(game *game.GameState, camera *Camera) {
 	}
 }
 
-func DrawFruits(game *game.GameState, camera *Camera) {
-	game.Mu.Lock()
-	defer game.Mu.Unlock()
+func drawFruits(game *game.GameState, camera *Camera) {
 
 	for x := range camera.cameraDim.X {
 		for y := range camera.cameraDim.Y {
