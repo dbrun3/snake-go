@@ -44,6 +44,13 @@ func (gs *GameState) HandleEvent(sender string, e []byte) {
 			return
 		}
 		gs.RemoveSnake(snake)
+	case "kill_snake":
+		snake, err := objects.ImportSnake(event.Data)
+		if err != nil {
+			fmt.Print(err)
+			return
+		}
+		gs.KillSnake(snake)
 
 	case "plant_seed":
 		var seed Seed
@@ -114,6 +121,33 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 		gs.SendEvent("update_snake", data)
 		return
 	}
+}
+
+func (gs *GameState) KillSnake(updatedSnake *objects.Snake) {
+	gs.Mu.Lock()
+	defer gs.Mu.Unlock()
+
+	id := updatedSnake.Id
+
+	snake, exists := gs.Snakes[id]
+	if !exists {
+		return
+	}
+
+	snake.Dead = true
+
+	r := rand.New(rand.NewSource(int64(updatedSnake.Len)))
+	for index, part := range snake.Body {
+		if index%2 == 0 {
+			objects.CreateFruit(
+				snake.Color,
+				objects.Coord{X: part.X + r.Intn(2) - 1, Y: part.Y + r.Intn(2) - 1},
+				&gs.Fruits)
+
+		}
+	}
+
+	// no server rebroadcast necessary, server-only event
 }
 
 func (gs *GameState) RemoveSnake(snake *objects.Snake) {

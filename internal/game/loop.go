@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"snake/internal/objects"
 	"time"
 )
 
@@ -55,6 +54,9 @@ func (gs *GameState) GameLoop() {
 				// Decrease speed boosted snake length after frame delay
 				if snake.Speed && frame%3 == 0 {
 					snake.Len--
+					if snake.Len <= 2 {
+						snake.Speed = false
+					}
 				}
 
 				// Move
@@ -70,26 +72,17 @@ func (gs *GameState) GameLoop() {
 					snake.Eat()
 				}
 
-				// Another snake's head crashes into body
-				for _, b := range snake.Body {
-					hitSnake, hit := gs.heads[b]
-
-					if hitSnake != snake && hit && !hitSnake.Dead {
-
-						hitSnake.Dead = true
-
-						r := rand.New(rand.NewSource(int64(hitSnake.Len)))
-						for index, part := range hitSnake.Body {
-							if index%2 == 0 {
-								objects.CreateFruit(
-									hitSnake.Color,
-									objects.Coord{X: part.X + r.Intn(2) - 1, Y: part.Y + r.Intn(2) - 1},
-									&gs.Fruits)
-
-							}
+				// Collision (server authoritive)
+				if gs.IsServer() {
+					for _, b := range snake.Body {
+						hitSnake, hit := gs.heads[b]
+						if hitSnake != snake && hit && !hitSnake.Dead {
+							data, _ := hitSnake.Export()
+							gs.SendEvent("kill_snake", data)
 						}
 					}
 				}
+
 			}
 			frame++
 			gs.Mu.Unlock()
