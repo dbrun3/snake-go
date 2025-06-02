@@ -117,7 +117,7 @@ func (gs *GameState) UpdateSnake(updatedSnake *objects.Snake) {
 
 	if gs.IsServer() {
 		// Rebroadcast update
-		data, _ := snake.Export()
+		data, _ := updatedSnake.Export()
 		gs.SendEvent("update_snake", data)
 		return
 	}
