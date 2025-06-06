@@ -11,7 +11,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-// Todo refactor to handle inputs in separate function from rendering. add death screen menu
+// TODO: Add init/death screen menu to set name and color, rather than using defaults
 func SnakeGame(game *game.GameState, name string, color objects.Color) {
 
 	// initialize window
