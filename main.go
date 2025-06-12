@@ -6,7 +6,6 @@ import (
 	"snake/cmd"
 	"snake/internal/client"
 	"snake/internal/game"
-	"snake/internal/objects"
 	"snake/internal/server"
 )
 
@@ -33,7 +32,7 @@ func main() {
 	}
 
 	if isPlayer {
-		go cmd.SnakeGame(game, "dylan", objects.ColorCyan)
+		go cmd.SnakeGame(game)
 	}
 
 	game.GameLoop()

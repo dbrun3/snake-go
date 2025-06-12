@@ -11,44 +11,39 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-// Todo refactor to handle inputs in separate function from rendering. add death screen menu
-func SnakeGame(game *game.GameState, name string, color objects.Color) {
+func SnakeGame(game *game.GameState) {
+	name := "dylan"
+	color := objects.ColorBlue
 
-	// initialize window
 	err := render.Init()
 	if err != nil {
 		panic(err)
 	}
 	defer render.Close()
 
-	// start camera w a dead snake to watch
 	camera := render.CreateCamera()
 	camera.SetSize(render.Size())
-	var mySnake *objects.Snake = &objects.Snake{Dead: true, Body: []objects.Coord{{X: 0, Y: 0}}}
 
-	// Event channel
+	var mySnake *objects.Snake = &objects.Snake{Dead: true, Body: []objects.Coord{{X: 0, Y: 0}}}
+	var menu *render.Menu
+
 	eventCh := make(chan termbox.Event, 4)
-	lastSendTime := time.Now() // the input throttle timer
+	lastSendTime := time.Now()
+
 	go func() {
 		for {
 			eventCh <- termbox.PollEvent()
 		}
 	}()
 
-	// Event and render loop
 	tick := time.NewTicker(32 * time.Millisecond)
 	defer tick.Stop()
+
 	for {
-
 		select {
-
-		// event loop
 		case ev := <-eventCh:
 			switch ev.Type {
-
-			// key press
 			case termbox.EventKey:
-
 				if ev.Key == termbox.KeyEsc {
 					render.Close()
 					process, err := os.FindProcess(os.Getpid())
@@ -60,64 +55,64 @@ func SnakeGame(game *game.GameState, name string, color objects.Color) {
 				}
 
 				if mySnake.Dead {
-
-					// on start/death keypress to submit a new snake
-					newSnake := &objects.Snake{Id: game.ClientId, Name: name, Color: color}
-
-					// snake must first be registered on the server if not host
-					if game.IsServer() {
-						game.AddSnake(newSnake)
+					// Ensure menu exists and update it
+					if menu == nil || !menu.Active {
+						menu = render.NewMenu(&name, &color, camera)
 					} else {
-						data, _ := newSnake.Export()
-						game.SendEvent("add_snake", data)
+						menu.Update(ev)
 					}
-
-					mySnake, err = game.WaitForSnake(time.Second * 5)
-					if err != nil {
-						fmt.Println("Could not create snake", err)
-						return
-					}
-
 				} else {
-					// Throttle game inputs to prevent congestion (websockets will block to process everything in correct order)
 					now := time.Now()
 					if now.Sub(lastSendTime) > 100*time.Millisecond {
 						switch ev.Key {
-
 						case termbox.KeyArrowRight:
 							mySnake.ChangeDir(objects.RIGHT)
-
 						case termbox.KeyArrowLeft:
 							mySnake.ChangeDir(objects.LEFT)
-
 						case termbox.KeyArrowUp:
 							mySnake.ChangeDir(objects.UP)
-
 						case termbox.KeyArrowDown:
 							mySnake.ChangeDir(objects.DOWN)
-
 						case termbox.KeySpace:
 							mySnake.ChangeSpeed()
 						}
 						data, _ := mySnake.Export()
 						game.SendEvent("update_snake", data)
+						lastSendTime = now
 					}
-					lastSendTime = now
 				}
 
-			// resize event, update camera
 			case termbox.EventResize:
 				camera.SetSize(ev.Width, ev.Height)
 			}
 
-		// render loop
 		case <-tick.C:
-			// camera pointed at snake head
-			camera.FollowPos(mySnake.Head())
 
-			// main render loop
+			// Handle snake respawn if menu just finished
+			if mySnake.Dead && menu != nil && !menu.Active {
+				newSnake := &objects.Snake{Id: game.ClientId, Name: name, Color: color}
+				if game.IsServer() {
+					game.AddSnake(newSnake)
+				} else {
+					data, _ := newSnake.Export()
+					game.SendEvent("add_snake", data)
+				}
+				var err error
+				mySnake, err = game.WaitForSnake(time.Second * 5)
+				if err != nil {
+					fmt.Println("Could not create snake", err)
+					return
+				}
+				menu = nil // reset menu for next death
+			}
+
+			// Render everything else
+			camera.FollowPos(mySnake.Head())
 			render.Clear()
 			render.RenderGameState(game, camera)
+			if mySnake.Dead && menu != nil {
+				menu.Draw()
+			}
 			render.Flush()
 		}
 	}
