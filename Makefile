@@ -1,4 +1,4 @@
-.PHONY: build clean run run-client run-server
+.PHONY: build clean run run-client run-server deploy
 
 SERVER_URL=localhost:8080
 
@@ -15,3 +15,4 @@ run-client:
 
 run-server:
 	go run main.go --mode server
+
