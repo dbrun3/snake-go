@@ -56,7 +56,9 @@ jobs:
           token: ${{ github.token }}
           tag: release
           fail-if-no-assets: false
-
+          assets: |
+            *
+            
   releases-matrix:
     name: Release Go Binary
     runs-on: ubuntu-latest
