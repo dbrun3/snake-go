@@ -31,7 +31,7 @@ func main() {
 		go client.WsClient(game, *addr)
 	}
 
-	fmt.Println("Snake-go!")
+	fmt.Println("Snake-go!!!")
 
 	if isPlayer {
 		go cmd.SnakeGame(game)

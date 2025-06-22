@@ -1,14 +1,11 @@
 FROM golang:latest
 
-RUN mkdir /app
-
-ADD . /app
-
 WORKDIR /app
 
-RUN make build
+COPY . .
+
+RUN go build -o bin/app ./main.go
 
 EXPOSE 8080
 
-CMD ["./bin/app --mode server"]
-
+CMD ["./bin/app", "--mode", "server"]

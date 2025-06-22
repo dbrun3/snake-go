@@ -1,6 +1,12 @@
 .PHONY: build clean run run-client run-server deploy
 
-SERVER_URL=localhost:8080
+ifneq (,$(wildcard .env))
+  include .env
+  export
+endif
+
+# Default value if not set in .env or shell
+SERVER_URL ?= localhost:8080
 
 build: 	go build -o bin/app ./main.go
 
