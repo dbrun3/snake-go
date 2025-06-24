@@ -66,14 +66,15 @@ func openHostFile(addr *string) {
 		// edit
 		cmd.SelectHost(addr)
 
-		// write
-		hf, err = os.Create(".snake.host")
-		if err != nil {
-			panic(err)
-		}
-		_, err = hf.Write([]byte(*addr))
-		if err != nil {
-			panic(err)
-		}
 	}
+	// write
+	hf, err := os.Create(".snake.host")
+	if err != nil {
+		panic(err)
+	}
+	_, err = hf.Write([]byte(*addr))
+	if err != nil {
+		panic(err)
+	}
+
 }

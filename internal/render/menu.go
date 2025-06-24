@@ -148,17 +148,21 @@ func (h *HostSelection) Draw() {
 	clearRectangle(startX, startY, menuWidth, menuHeight)
 
 	// Center prompt
-	promptText := "Enter a host to connect to"
+	promptText := "Connect to host:"
 	promptX := (width - len(promptText)) / 2
 	drawSentence(promptX, startY+1, promptText)
 	startY += 1
 
 	// Draw name input box centered
-	nameBoxWidth := max(len(*h.Host), 20)
+	nameBoxWidth := max(len(*h.Host), 25)
 	nameBoxX := (width - (nameBoxWidth + 2)) / 2
 	nameBoxY := startY + 3
 	drawOutline(nameBoxX, nameBoxY, nameBoxWidth+2, 3)
-	drawSentence(nameBoxX+1, nameBoxY+1, padRight(*h.Host, 10))
+	if len(*h.Host) == 0 {
+		drawSentenceColor(nameBoxX+1, nameBoxY+1, "Enter Host Address", termbox.ColorDarkGray)
+	} else {
+		drawSentence(nameBoxX+1, nameBoxY+1, padRight(*h.Host, 10))
+	}
 }
 
 func typeEvent(text *string, event termbox.Event) bool {
@@ -241,10 +245,14 @@ func clearRectangle(x, y, w, h int) {
 	}
 }
 
-func drawSentence(x, y int, sentence string) {
+func drawSentenceColor(x, y int, sentence string, color termbox.Attribute) {
 	for i, c := range sentence {
-		drawChar(x+i, y, c, termbox.ColorWhite)
+		drawChar(x+i, y, c, color)
 	}
+}
+
+func drawSentence(x, y int, sentence string) {
+	drawSentenceColor(x, y, sentence, termbox.ColorWhite)
 }
 
 func drawChar(x, y int, char rune, color termbox.Attribute) {
