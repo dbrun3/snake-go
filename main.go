@@ -35,8 +35,6 @@ func main() {
 		go client.WsClient(game, *addr)
 	}
 
-	fmt.Println("Snake-go!!!")
-
 	if isPlayer {
 		go cmd.SnakeGame(game)
 	}
@@ -56,7 +54,7 @@ func openHostFile(addr *string) {
 		}
 
 		// read
-		buf := make([]byte, 48)
+		buf := make([]byte, 64)
 		n, err := hf.Read(buf)
 		if err != nil && err != io.EOF {
 			panic(err)

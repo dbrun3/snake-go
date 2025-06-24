@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"snake/internal/events"
 	"snake/internal/objects"
@@ -40,15 +39,13 @@ func (gs *GameState) HandleEvent(sender string, e []byte) {
 	case "remove_snake":
 		snake, err := objects.ImportSnake(event.Data)
 		if err != nil {
-			fmt.Print(err)
-			return
+			panic(err)
 		}
 		gs.RemoveSnake(snake)
 	case "kill_snake":
 		snake, err := objects.ImportSnake(event.Data)
 		if err != nil {
-			fmt.Print(err)
-			return
+			panic(err)
 		}
 		gs.KillSnake(snake)
 

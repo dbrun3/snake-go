@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/json"
-	"fmt"
 	"snake/internal/objects"
 )
 
@@ -15,7 +14,7 @@ type ExportState struct {
 func (gs *GameState) Import(data []byte) {
 	var eS ExportState
 	if err := json.Unmarshal(data, &eS); err != nil {
-		fmt.Printf("JSON unmarshal failed: %s\n", err)
+		panic(err)
 	}
 
 	game := importFrom(&eS)

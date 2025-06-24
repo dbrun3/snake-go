@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -23,7 +22,7 @@ func WsClient(game *game.GameState, address string) {
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		fmt.Println("dial:", err)
+		panic(err)
 	}
 	defer c.Close()
 
@@ -34,8 +33,7 @@ func WsClient(game *game.GameState, address string) {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				fmt.Println("read:", err)
-				return
+				panic(err)
 			}
 
 			reader := bytes.NewReader(message)
@@ -49,8 +47,7 @@ func WsClient(game *game.GameState, address string) {
 					if err == io.EOF {
 						break // We've processed all complete JSON objects
 					}
-					fmt.Println("Error decoding JSON:", err)
-					break
+					panic(err)
 				}
 				game.HandleEvent("server", data)
 			}
@@ -64,18 +61,15 @@ func WsClient(game *game.GameState, address string) {
 		case t := <-game.Send:
 			err := c.WriteMessage(websocket.TextMessage, t)
 			if err != nil {
-				fmt.Println("write:", err)
-				return
+				panic(err)
 			}
 		case <-interrupt:
-			fmt.Println("interrupt")
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				fmt.Println("write close:", err)
-				return
+				panic(err)
 			}
 			select {
 			case <-done:

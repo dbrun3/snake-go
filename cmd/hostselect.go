@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"snake/internal/render"
 	"time"
@@ -45,7 +44,7 @@ func SelectHost(host *string) {
 					render.Close()
 					process, err := os.FindProcess(os.Getpid())
 					if err != nil {
-						fmt.Println(err)
+						panic(err)
 					}
 					process.Signal(os.Interrupt)
 					return

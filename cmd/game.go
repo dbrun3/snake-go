@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"snake/internal/game"
 	"snake/internal/objects"
@@ -48,7 +47,7 @@ func SnakeGame(game *game.GameState) {
 					render.Close()
 					process, err := os.FindProcess(os.Getpid())
 					if err != nil {
-						fmt.Println(err)
+						panic(err)
 					}
 					process.Signal(os.Interrupt)
 					return
@@ -100,8 +99,7 @@ func SnakeGame(game *game.GameState) {
 				var err error
 				mySnake, err = game.WaitForSnake(time.Second * 5)
 				if err != nil {
-					fmt.Println("Could not create snake", err)
-					return
+					panic(err)
 				}
 				menu = nil // reset menu for next death
 			}
