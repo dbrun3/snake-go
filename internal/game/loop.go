@@ -11,6 +11,7 @@ const FRUIT_PER_TICK = 20
 const MAX_FRUIT = 200
 const MAP_SIZE = 300
 const TICK_DURATION = 50
+const SPEED_FRAMES = 9
 
 func (gs *GameState) GameLoop() {
 
@@ -54,8 +55,9 @@ func (gs *GameState) GameLoop() {
 				// Decrease speed boosted snake length after frame delay
 				if snake.Speed && frame%3 == 0 {
 					snake.Len--
-					if snake.Len <= 2 {
+					if snake.Len <= 2 || frame >= SPEED_FRAMES {
 						snake.Speed = false
+						frame = 0
 					}
 				}
 

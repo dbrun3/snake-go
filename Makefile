@@ -14,7 +14,7 @@ clean:
 	rm -rf bin/*
 
 run:
-	go run main.go
+	go run main.go --mode host
 
 run-client:
 	go run main.go --mode client --addr $(SERVER_URL)

@@ -12,8 +12,8 @@ import (
 )
 
 func SnakeGame(game *game.GameState) {
-	name := "dylan"
-	color := objects.ColorBlue
+	name := ""
+	color := 0
 
 	err := render.Init()
 	if err != nil {
@@ -90,7 +90,7 @@ func SnakeGame(game *game.GameState) {
 
 			// Handle snake respawn if menu just finished
 			if mySnake.Dead && menu != nil && !menu.Active {
-				newSnake := &objects.Snake{Id: game.ClientId, Name: name, Color: color}
+				newSnake := &objects.Snake{Id: game.ClientId, Name: name, Color: objects.AllColors[color]}
 				if game.IsServer() {
 					game.AddSnake(newSnake)
 				} else {
