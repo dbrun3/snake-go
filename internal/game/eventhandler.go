@@ -62,9 +62,8 @@ func (gs *GameState) AddSnake(snake *objects.Snake) {
 
 	var x, y int
 	if gs.IsServer() {
-
-		x = 0 //gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
-		y = 0 //gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
+		x = gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
+		y = gs.r.Intn(MAP_SIZE/2) - (MAP_SIZE / 4)
 	} else {
 		x = snake.Head().X
 		y = snake.Head().Y
@@ -131,9 +130,14 @@ func (gs *GameState) KillSnake(updatedSnake *objects.Snake) {
 		return
 	}
 
+	gs.killSnake(snake)
+	// no server rebroadcast necessary, server-only event
+}
+
+func (gs *GameState) killSnake(snake *objects.Snake) {
 	snake.Dead = true
 
-	r := rand.New(rand.NewSource(int64(updatedSnake.Len)))
+	r := rand.New(rand.NewSource(int64(snake.Len)))
 	for index, part := range snake.Body {
 		if index%2 == 0 {
 			objects.CreateFruit(
@@ -143,8 +147,6 @@ func (gs *GameState) KillSnake(updatedSnake *objects.Snake) {
 
 		}
 	}
-
-	// no server rebroadcast necessary, server-only event
 }
 
 func (gs *GameState) RemoveSnake(snake *objects.Snake) {

@@ -11,7 +11,7 @@ const FRUIT_PER_TICK = 20
 const MAX_FRUIT = 200
 const MAP_SIZE = 300
 const TICK_DURATION = 50
-const SPEED_FRAMES = 9
+const UPDATE_FRAMES = 21
 
 func (gs *GameState) GameLoop() {
 
@@ -55,9 +55,8 @@ func (gs *GameState) GameLoop() {
 				// Decrease speed boosted snake length after frame delay
 				if snake.Speed && frame%3 == 0 {
 					snake.Len--
-					if snake.Len <= 2 || frame >= SPEED_FRAMES {
+					if snake.Len <= 2 {
 						snake.Speed = false
-						frame = 0
 					}
 				}
 
@@ -78,14 +77,20 @@ func (gs *GameState) GameLoop() {
 				if gs.IsServer() {
 					for _, b := range snake.Body {
 						hitSnake, hit := gs.heads[b]
-						if hitSnake != snake && hit && !hitSnake.Dead {
+						if hitSnake != snake && hit && !hitSnake.Dead && !snake.Dead {
 							data, _ := hitSnake.Export()
 							gs.SendEvent("kill_snake", data)
+							gs.killSnake(hitSnake)
 						}
 					}
-				}
 
+					if frame%UPDATE_FRAMES == 0 {
+						data, _ := snake.Export()
+						gs.SendEvent("update_snake", data)
+					}
+				}
 			}
+
 			frame++
 			gs.Mu.Unlock()
 		}

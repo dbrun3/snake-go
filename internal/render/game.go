@@ -3,6 +3,8 @@ package render
 import (
 	"snake/internal/game"
 	"snake/internal/objects"
+	"sort"
+	"strconv"
 
 	"github.com/nsf/termbox-go"
 )
@@ -42,7 +44,34 @@ func RenderGameState(game *game.GameState, camera *Camera) {
 
 	drawFruits(game, camera)
 	drawSnakes(game, camera)
+	drawLeaderboard(game, camera)
 
+}
+
+func drawLeaderboard(game *game.GameState, camera *Camera) {
+
+	s := 0
+	sortedSnakes := make([]*objects.Snake, len(game.Snakes))
+	for _, snake := range game.Snakes {
+		sortedSnakes[s] = snake
+		s++
+	}
+
+	sort.Slice(sortedSnakes, func(i, j int) bool {
+		return sortedSnakes[i].Len > sortedSnakes[j].Len
+	})
+
+	x := camera.cameraDim.X - 15
+	for y, snake := range sortedSnakes {
+		line := snake.Name
+		score := strconv.Itoa(snake.Len)
+
+		buf := make([]byte, 15)
+		copy(buf, line)
+		copy(buf[(15-len(score)-1):], score)
+
+		drawSentenceColor(x, y, string(buf), snake.Color.ToTermbox())
+	}
 }
 
 // Render all snakes to the screen

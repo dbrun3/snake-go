@@ -128,7 +128,7 @@ func (s *Snake) ChangeDir(Dir int) bool {
 }
 
 func (s *Snake) ChangeSpeed() {
-	s.Speed = true
+	s.Speed = !s.Speed
 	if s.Speed && s.Len <= 2 {
 		s.Speed = false
 	}
