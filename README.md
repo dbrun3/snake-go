@@ -13,6 +13,8 @@ But here are some commands that hopefully make installing the lastest version
 of the game an easier process. I've only verified the mac one works right now, 
 post an issue if you have any problems with the other platforms.
 
+After installing, run in the terminal with `snake-go`
+
 ## To install
 ### Mac
 ```
