@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	mode := flag.String("mode", "client", "host, client, server (default host)")
+	mode := flag.String("mode", "client", "host, client, server (default client)")
 	port := flag.Int("port", 8080, "the port to open incoming connections (default 8080)")
 	addr := flag.String("addr", "none", "the host/server to connect to (required if mode:client)")
 

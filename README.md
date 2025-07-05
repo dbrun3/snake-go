@@ -1,11 +1,29 @@
 # snake.go
 ### A snake.io inspired game for the terminal
 
-## To run
-This is still largely a work in progress, so even my makefile isn't fully configured yet. To start up a host simply run `go run .` 
-You can change the mode from default (host) with the --mode flag setting it to `server` for a headless server or `client` to join another server as a player.
-`client` players must specify an address of the server they wish to connect to via --addr and passing the address as a string
+This is game I started working on to learn Go and CI/CD Actions for a new job.
 
-## Example
-Player 1 wants to be host so he/she simply runs `go run .` with starts the server on default port 8080 (or configured with --port) and joins as a player.
-Player 2 is on the same network and joins Player 1's game with `go run --mode client --addr 10.0.0.1:8080` or whatever their local DHCP address is (can be found with `ifconfig`)
+By default the game is in client mode, where you will be prompted to connect to a
+server (which I have kept private for obvious reasons) but you can play local games 
+with the flag --mode host, where other players will connect to your game game, 
+or setup a dedicated server (no graphics) with --mode server.
+
+In practice, never copy/paste commands from github into the terminal😭 
+But here are some commands that hopefully make installing the lastest version 
+of the game an easier process. I've only verified the mac one works right now, 
+post an issue if you have any problems with the other platforms.
+
+## To install
+### Mac
+```
+curl -L -o /tmp/snake-go.tar.gz "https://github.com/dbrun3/snake-go/releases/download/v1.0.0/snake-go-v1.0.0-darwin-arm64.tar.gz" && sudo xattr -rd com.apple.quarantine /tmp/snake-go.tar.gz && tar -xzf /tmp/snake-go.tar.gz -C /tmp/ && sudo mv /tmp/snake-go /usr/local/bin/ && sudo chmod +x /usr/local/bin/snake-go
+```
+### Linux
+```
+curl -L -o /tmp/snake-go.tar.gz "https://github.com/dbrun3/snake-go/releases/download/v1.0.0/snake-go-v1.0.0-linux-amd64.tar.gz" && tar -xzf /tmp/snake-go.tar.gz -C /tmp/ && sudo mv /tmp/snake-go /usr/local/bin/ && sudo chmod +x /usr/local/bin/snake-go
+```
+### Windows
+Using PowerShell:
+```
+powershellInvoke-WebRequest -Uri "https://github.com/dbrun3/snake-go/releases/download/v1.0.0/snake-go-v1.0.0-windows-amd64.zip" -OutFile "$env:TEMP\snake-go.zip"; Expand-Archive -Path "$env:TEMP\snake-go.zip" -DestinationPath "$env:TEMP\snake-go"
+```
