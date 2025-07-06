@@ -27,5 +27,5 @@ curl -L -o /tmp/snake-go.tar.gz "https://github.com/dbrun3/snake-go/releases/dow
 ### Windows
 Using PowerShell:
 ```
-powershellInvoke-WebRequest -Uri "https://github.com/dbrun3/snake-go/releases/download/v1.0.0/snake-go-v1.0.0-windows-amd64.zip" -OutFile "$env:TEMP\snake-go.zip"; Expand-Archive -Path "$env:TEMP\snake-go.zip" -DestinationPath "$env:TEMP\snake-go"
+Invoke-WebRequest -Uri "https://github.com/dbrun3/snake-go/releases/download/v1.0.0/snake-go-v1.0.0-windows-amd64.zip" -OutFile "$env:TEMP\snake-go.zip"; Expand-Archive -Path "$env:TEMP\snake-go.zip" -DestinationPath "$env:TEMP\snake-go" -Force; $WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\Snake-Go.lnk"); $Shortcut.TargetPath = "$env:TEMP\snake-go\snake-go.exe"; $Shortcut.Save()
 ```
