@@ -1,21 +1,108 @@
-name: "tagged-release"
+name: "tagged-release-and-deploy"
 
 on:
   push:
     tags:
       - "v*"
 
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: snake-go
+  ECS_SERVICE: snake-go-service
+  ECS_CLUSTER: snake
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: snake-go-server
+
 permissions:
   contents: write
 
 jobs:
-  tagged-release:
-    name: "Tagged Release"
+  create-release:
+    name: "Create Release"
     runs-on: "ubuntu-latest"
-
     steps:
-      # Todo create tests and run before release
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
+
+  build-binaries:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    needs: create-release
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          - goarch: arm64
+            goos: windows
+    steps:
+    - uses: actions/checkout@v4
+    - uses: wangyoucao577/go-release-action@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        binary_name: "snake-go"
+        overwrite: true
+
+  deploy:
+    name: Deploy Game Server
+    runs-on: ubuntu-latest
+    environment: game-server
+    needs: build-binaries
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        echo "::add-mask::$ECR_REGISTRY"
+        echo "::add-mask::$IMAGE_TAG"
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Inject image URI into ECS task definition
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ROLE_ARN: ${{ secrets.AWS_TASK_ROLE }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        jq --arg IMAGE "$IMAGE_URI" \
+          --arg ROLE "$ROLE_ARN" \
+          '.containerDefinitions[0].image = $IMAGE | .executionRoleArn = $ROLE' \
+          $ECS_TASK_DEFINITION > task-def-updated.json
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-def-updated.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
