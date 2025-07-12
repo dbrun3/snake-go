@@ -148,6 +148,8 @@ func serveWs(server *Server, w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) checkId(id string) bool {
+	server.clientsMu.RLock()
+	defer server.clientsMu.RUnlock()
 	for c := range server.clients {
 		if c.id == id {
 			return false

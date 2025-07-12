@@ -4,11 +4,13 @@ import (
 	"snake/internal/events"
 	"snake/internal/game"
 	"snake/internal/objects"
+	"sync"
 )
 
 type Server struct {
 	// Registered clients.
 	clients map[*Client]bool
+	clientsMu sync.RWMutex
 
 	// Inbound messages from the clients.
 	events chan Message
@@ -43,7 +45,9 @@ func (s *Server) run() {
 	for {
 		select {
 		case client := <-s.register:
+			s.clientsMu.Lock()
 			s.clients[client] = true
+			s.clientsMu.Unlock()
 
 			data, _ := s.game.Export(client.id)
 			event := events.NewEvent("init", data)
@@ -51,10 +55,12 @@ func (s *Server) run() {
 			client.send <- e
 
 		case client := <-s.unregister:
+			s.clientsMu.Lock()
 			if _, ok := s.clients[client]; ok {
 				delete(s.clients, client)
 				close(client.send)
 			}
+			s.clientsMu.Unlock()
 
 			snake := &objects.Snake{Id: client.id}
 			s.game.RemoveSnake(snake)
@@ -67,13 +73,29 @@ func (s *Server) run() {
 
 func (s *Server) eventServer() {
 	for event := range s.game.Send {
+		s.clientsMu.RLock()
+		clients := make([]*Client, 0, len(s.clients))
 		for client := range s.clients {
+			clients = append(clients, client)
+		}
+		s.clientsMu.RUnlock()
+
+		var toRemove []*Client
+		for _, client := range clients {
 			select {
 			case client.send <- event:
 			default:
 				close(client.send)
+				toRemove = append(toRemove, client)
+			}
+		}
+
+		if len(toRemove) > 0 {
+			s.clientsMu.Lock()
+			for _, client := range toRemove {
 				delete(s.clients, client)
 			}
+			s.clientsMu.Unlock()
 		}
 	}
 }
