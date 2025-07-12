@@ -33,5 +33,5 @@ release:
 	fi; \
 	git add README.md; \
 	git commit -m "chore: update readme release version"; \
-	git tag $(svu next); \
+	git tag $(NEW_VERSION); \
 
