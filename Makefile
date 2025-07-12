@@ -34,4 +34,5 @@ release:
 	git add README.md; \
 	git commit -m "chore: update readme release version"; \
 	git tag $(NEW_VERSION); \
+	git push origin main --tags
 
