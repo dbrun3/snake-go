@@ -22,3 +22,15 @@ run-client:
 run-server:
 	go run main.go --mode server
 
+OLD_VERSION := $(shell git describe --tags --abbrev=0)
+NEW_VERSION := $(shell svu next)
+
+release:
+	@if [ "$$(uname)" = "Darwin" ]; then \
+		sed -i "" "s/$(OLD_VERSION)/$(NEW_VERSION)/g" README.md; \
+	else \
+		sed -i "s/$(OLD_VERSION)/$(NEW_VERSION)/g" README.md; \
+	fi; \
+	git commit -m "chore: update readme release version"; \
+	git tag $(svu next); \
+
