@@ -214,18 +214,18 @@ func padRight(str string, minLen int) string {
 }
 
 func drawOutline(x, y, w, h int) {
-	drawChar(x, y, '┌', termbox.ColorWhite)
-	drawChar(x+w-1, y, '┐', termbox.ColorWhite)
-	drawChar(x, y+h-1, '└', termbox.ColorWhite)
-	drawChar(x+w-1, y+h-1, '┘', termbox.ColorWhite)
+	drawChar(x, y, '╭', termbox.ColorWhite)
+	drawChar(x+w-1, y, '╮', termbox.ColorWhite)
+	drawChar(x, y+h-1, '╰', termbox.ColorWhite)
+	drawChar(x+w-1, y+h-1, '╯', termbox.ColorWhite)
 
 	for i := range w - 2 {
 		drawChar(x+1+i, y, '─', termbox.ColorWhite)
 		drawChar(x+1+i, y+h-1, '─', termbox.ColorWhite)
 	}
 	for i := range h - 2 {
-		drawChar(x, y+1+i, '|', termbox.ColorWhite)
-		drawChar(x+w-1, y+1+i, '|', termbox.ColorWhite)
+		drawChar(x, y+1+i, '│', termbox.ColorWhite)
+		drawChar(x+w-1, y+1+i, '│', termbox.ColorWhite)
 	}
 }
 
