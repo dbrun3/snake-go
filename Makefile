@@ -31,6 +31,7 @@ release:
 	else \
 		sed -i "s/$(OLD_VERSION)/$(NEW_VERSION)/g" README.md; \
 	fi; \
+	git add README.md; \
 	git commit -m "chore: update readme release version"; \
 	git tag $(svu next); \
 
