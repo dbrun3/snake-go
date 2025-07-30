@@ -2,7 +2,7 @@
 ### A slither.io inspired game for the terminal
 
 This is game I started writing to learn Go for a new job, as well as learn some 
-Github Actions for CI/CD and other things. It was inspired by slither.io in in
+Github Actions for CI/CD and other things. It was inspired by slither.io and in
 hindsight should have probably been named slither.go...
 
 By default the game is in client mode, where you will be prompted to connect to a
