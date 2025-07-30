@@ -1,7 +1,9 @@
 # snake.go
-### A snake.io inspired game for the terminal
+### A slither.io inspired game for the terminal
 
-This is game I started working on to learn Go and CI/CD Actions for a new job.
+This is game I started writing to learn Go for a new job, as well as learn some 
+Github Actions for CI/CD and other things. It was inspired by slither.io in in
+hindsight should have probably been named slither.go...
 
 By default the game is in client mode, where you will be prompted to connect to a
 server (which I have kept private for obvious reasons) but you can play local games 
@@ -10,8 +12,7 @@ or setup a dedicated server (no graphics) with --mode server.
 
 In practice, never copy/paste commands from github into the terminal😭 
 But here are some commands that hopefully make installing the lastest version 
-of the game an easier process. I've only verified the mac one works right now, 
-post an issue if you have any problems with the other platforms.
+of the game an easier process.
 
 After installing, run in the terminal with `snake-go`
 
